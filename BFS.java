@@ -97,6 +97,7 @@ public class BFS {
     private void checkNode(Cell currentNode, int col, int row) {
         Cell adjacentNode = this.searchArea.getCell(row, col);
         adjacentNode.setXY(row, col);
+        //System.out.println(adjacentNode);
         if (!adjacentNode.isWall()&& !getClosedSet().contains(adjacentNode)) {
             adjacentNode.setParent(currentNode);
             queue.add(adjacentNode);

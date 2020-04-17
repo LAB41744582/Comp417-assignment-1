@@ -13,7 +13,9 @@ import java.awt.Graphics;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.awt.Canvas;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Iterator;
 
 class GridGenerator{
 	public static void VisualizeGrid(String frame_name, int N, int M, int [] walls, int [] grass, int start_idx, int terminal_idx ){
@@ -52,40 +54,8 @@ class GridGenerator{
 		int N = mygrid.getNumOfRows();
 		int M = mygrid.getNumOfColumns();
                 
-                int i = 0;
-                AStar A = new AStar(mygrid);
-                BFS bfs = new BFS(mygrid);
-                DFS dfs = new DFS(mygrid);
-                List<Cell> pathA = A.findPath();
-                List<Cell> pathB = bfs.createTreeBFSWay();
-                List<Cell> pathC = dfs.createTreeDFSWay();
-                //VisualizeGrid(frame,N,M,mygrid.getWalls(),mygrid.getGrass(),mygrid.getStartidx(),mygrid.getTerminalidx());
-                int[] steps = new int[pathA.size()];
-                //System.out.println("A* steps:");
-                for (Cell node : pathA) {
-                    //System.out.println(node+"Node Cost: "+node.getCost());
-                    steps[i] = node.getX()*M + node.getY();
-                    i++;
-                }
-                //VisualizeGrid(frame,N,M,mygrid.getWalls(),mygrid.getGrass(),steps,mygrid.getStartidx(),mygrid.getTerminalidx());
-                i = 0;
-                steps = new int[pathB.size()];
-                //System.out.println("BFS steps:");
-                for (Cell node : pathB) {
-                    //System.out.println(node);
-                    steps[i] = node.getX()*M + node.getY();
-                    i++;
-                }
-                //VisualizeGrid(frame,N,M,mygrid.getWalls(),mygrid.getGrass(),steps,mygrid.getStartidx(),mygrid.getTerminalidx());
-                i = 0;
-                steps = new int[pathC.size()];
-                //System.out.println("BFS steps:");
-                for (Cell node : pathC) {
-                    System.out.println(node);
-                    steps[i] = node.getX()*M + node.getY();
-                    i++;
-                }
-                VisualizeGrid(frame,N,M,mygrid.getWalls(),mygrid.getGrass(),steps,mygrid.getStartidx(),mygrid.getTerminalidx());
+                PathFinder pf = new PathFinder(mygrid,N,M,frame);
+                pf.exec();
 	}
 		
 }

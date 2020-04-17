@@ -106,6 +106,7 @@ public class AStar {
     private void checkNode(Cell currentNode, int col, int row, int cost) {
         Cell adjacentNode = this.searchArea.getCell(row, col);
         adjacentNode.setXY(row, col);
+        //System.out.println(adjacentNode);
         adjacentNode.calculateHeuristic(getFinalNode());
         if (!adjacentNode.isWall() && !getClosedSet().contains(adjacentNode)) {
             if (!getOpenList().contains(adjacentNode)) {
@@ -116,7 +117,7 @@ public class AStar {
                 if (changed) {
                     // Remove and Add the changed node, so that the PriorityQueue can sort again its
                     // contents with the modified "finalCost" value of the modified node
-                    System.out.println("been here");
+                    //System.out.println("been here");
                     getOpenList().remove(adjacentNode);
                     getOpenList().add(adjacentNode);
                 }
