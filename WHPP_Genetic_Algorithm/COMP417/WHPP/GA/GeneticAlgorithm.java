@@ -6,7 +6,7 @@ public class GeneticAlgorithm{
 		Population pop = new Population();
 		//pop.printPop();
 		int generation = 0;
-		while(generation < 10){
+		while(generation < 1000){
 			pop.evaluate();
 			pop.printBest();
 			pop.select();

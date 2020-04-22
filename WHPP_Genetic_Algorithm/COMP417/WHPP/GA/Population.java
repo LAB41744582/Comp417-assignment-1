@@ -2,11 +2,13 @@ package COMP417.WHPP.GA;
 
 import java.lang.Math;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public class Population {
-	private final static int POP_SIZE = 100;
+	private final static int POP_SIZE = 500;
 	private int Sf = 0;
-	private int ndx = 0;
+	private double mut_rate = 0.06;
 	Schedule pop[] = new Schedule[POP_SIZE];
 	Schedule new_pop[] = new Schedule[POP_SIZE];
 	Schedule s1[] = new Schedule[POP_SIZE/2];
@@ -20,10 +22,6 @@ public class Population {
 		for(int iter = 0; iter < POP_SIZE; iter++){
 			pop[iter] = new Schedule();
 			new_pop[iter] = new Schedule(1);
-		}
-		for(int iter = 0; iter < POP_SIZE/2; iter++){
-			s1[iter] = new Schedule(1);
-			s2[iter] = new Schedule(1);
 		}
 	}
 	
@@ -46,38 +44,62 @@ public class Population {
 		System.out.println(min);
 	}
 	
+	public Schedule getBest(){
+		int min = Integer.MAX_VALUE;
+		for(int iter = 0; iter < POP_SIZE; iter++){
+			if(pop[iter].getFitness() < min)
+				min = pop[iter].getFitness();
+		}
+		Schedule gb = null;
+		for(int iter = 0; iter < POP_SIZE; iter++){
+			if(pop[iter].getFitness() == min)
+				gb = pop[iter];
+		}
+		return gb;
+	}
+	
 	public void select(){
 		double pp = 0;
 		for(int iter = 0; iter < POP_SIZE; iter++){
 			pop[iter].setProbability(Sf,pp);
 			pp = pop[iter].getProbability();
+			//System.out.println("parent probability: "+ pp);
 		}
 		for(int pairs = 0; pairs < POP_SIZE/2; pairs++){
-			double p1 = Math.random();
-			double p2 = Math.random();
+			double p = Math.random();
 			for(int iter = 0; iter < POP_SIZE; iter++){
-				if(p1 >= pop[iter].getProbability()){
+				if( pop[iter].getProbability() <= p)
 					s1[pairs] = pop[iter];
-				}
-				if(p2 >= pop[iter].getProbability()){
-					s2[pairs] = pop[iter];
-				}
+				if(s1[pairs] == null)
+					s1[pairs] = pop[iter];
+				s2[pairs] = getBest();
 			}
 		}
-		/*for(int i =0; i<s1.length;i++){
-			System.out.println(s1[i]);
-			System.out.println("second");
-			System.out.println(s2[i]);
-		}*/
 	}
 	
 	public void crossbreed(){
-		double select;
+		double p;
 		int ndx = 0;
 		for(int iter = 0; iter < pop.length; iter++){
-			//crossover(iter);
+			//new_pop[iter] = s1[ndx];
+			for(int col = 0; col < pop[iter].getSD(); col++){
+				p = Math.random();
+				if(p >= 0.5){
+					new_pop[iter].setColumn(s2[ndx].getColumn(col), col);
+				}
+				else{
+					new_pop[iter].setColumn(s1[ndx].getColumn(col), col);
+				}
+				/*if(new_pop[iter].isFeasible())
+					System.out.println("OK");*/
+			}
+			
+			if(ndx < pop.length/2 - 1)
+				ndx++;
+			else
+				ndx = 0;
 		}
-		//pop = new_pop;
+		pop = new_pop;
 		//Sf = 0;
 		//evaluate();
 		//for(int iter = 0; iter < pop.length; iter++)
@@ -86,17 +108,36 @@ public class Population {
 	}
 	
 	public void mutate(){
+		double p = Math.random();
+		for(int iter = 0; iter < POP_SIZE; iter++){
+			if(p <= mut_rate){
+				setMutant(iter);
+			}
+		}
 	}
 	
-	public boolean evaluate(){
+	private void setMutant(int child){
+		int p = (int)(Math.random() * ((pop[child].getSD() - 1) + 1));
+		Integer[] boxedArray = Arrays.stream(pop[child].getColumn(p)) // IntStream
+								.boxed()				// Stream<Integer>
+								.toArray(Integer[]::new);
+		List<Integer> intList = Arrays.asList(boxedArray);
+		Collections.shuffle(intList);
+		intList.toArray(boxedArray);
+		int[] intArray = Arrays.stream(boxedArray).mapToInt(Integer::intValue).toArray();
+		pop[child].setColumn(intArray, p);
+	}
+	
+	public int evaluate(){
 		Sf = 0;
+		int score = 0;
 		for(int iter = 0; iter < pop.length; iter++){
 			int f = assignEvaluation(pop[iter].getSchedule(), iter);
 			Sf += f;
 			pop[iter].setFitness(f);
+			score = pop[iter].getFitness();
 		}
-		
-		return true;
+		return score;
 	}
 	
 	private int assignEvaluation(int[][] sched, int number){
