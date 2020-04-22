@@ -9,7 +9,9 @@ import java.util.List;
 public class Schedule {
 	private final static int EMP_NUM = 30;
 	private final static int SCHED_DAY_NUM = 14;
-	public int sched[][] = new int[EMP_NUM][SCHED_DAY_NUM]; 
+	private int sched[][] = new int[EMP_NUM][SCHED_DAY_NUM]; 
+	private int fitness;
+	private double probability = 0;
 	
 	private final static Integer[] MON_TUE = new Integer[] {0,0,0,0,0,1,1,1,1,1,1,1,1,1,
 										1,2,2,2,2,2,2,2,2,2,2,3,3,3,3,3};
@@ -19,6 +21,14 @@ public class Schedule {
 										0,1,1,1,1,1,2,2,2,2,2,3,3,3,3,3};
 	public Schedule(){
 		this.init();
+	}
+	
+	public Schedule(int flag){
+		for(int day = 0; day < SCHED_DAY_NUM; day++){
+			for(int emp = 0; emp < EMP_NUM; emp++){
+				sched[emp][day] = 0;
+			}
+		}
 	}
 	
 	private void init() {	//initialize schedule produces feasible chromosomes-schedules
@@ -105,5 +115,47 @@ public class Schedule {
 		}
 		return aString;
 	}
+	
+	public int[][] getSchedule(){
+		return this.sched;
+	}
+
+	public void setSchedule(int[][] s){
+		this.sched = s;
+	}
+
+	public void setFitness(int fitness){
+		this.fitness = fitness;
+	}
+	
+	public int getFitness(){
+		return this.fitness;
+	}
+	
+	public void setProbability(int totalFitness, double pp){
+		this.probability = pp + ((double)this.fitness / totalFitness);
+	}
+	
+	public double getProbability(){
+		return this.probability;
+	}
+	
+	public int[] getColumn(int col){
+		int[] colArray = new int[EMP_NUM];
+		for(int row = 0; row < EMP_NUM; row++){
+			colArray[row] = this.sched[row][col];
+		}
+		return colArray;
+	}
+	
+	public void setColumn(int[] colArray, int col){
+		for(int row = 0; row < EMP_NUM; row++){
+			this.sched[row][col] = colArray[row];
+		}
+	}
+	
+	public int getSD(){return SCHED_DAY_NUM;}
+	
+	public int getSE(){return EMP_NUM;}
 	
 }
