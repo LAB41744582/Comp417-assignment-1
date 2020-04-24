@@ -133,7 +133,7 @@ public class Schedule {
 	}
 	
 	public void setProbability(int totalFitness, double pp){
-		this.probability = pp + ((double)this.fitness / totalFitness);
+		this.probability = pp + (1-(double)this.fitness / totalFitness);
 	}
 	
 	public double getProbability(){

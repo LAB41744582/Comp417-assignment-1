@@ -6,13 +6,17 @@ public class GeneticAlgorithm{
 		Population pop = new Population();
 		//pop.printPop();
 		int generation = 0;
-		while(generation < 1000){
-			pop.evaluate();
-			pop.printBest();
+		pop.evaluate();
+		pop.printBest();
+		pop.printAvg();
+		while(generation < 500){
 			pop.select();
 			pop.crossbreed();
 			pop.mutate();
+			pop.evaluate();
+			pop.printBest();
 			generation++;
 		}
+		pop.printAvg();
 	}
 }

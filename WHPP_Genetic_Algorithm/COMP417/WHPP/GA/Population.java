@@ -1,18 +1,20 @@
 package COMP417.WHPP.GA;
 
-import java.lang.Math;
+import java.util.Random;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 public class Population {
-	private final static int POP_SIZE = 500;
+	private final static int POP_SIZE = 200;
 	private int Sf = 0;
-	private double mut_rate = 0.06;
+	private double mut_rate = 0.01;
+	private double cross_rate = 0.8;
 	Schedule pop[] = new Schedule[POP_SIZE];
 	Schedule new_pop[] = new Schedule[POP_SIZE];
 	Schedule s1[] = new Schedule[POP_SIZE/2];
 	Schedule s2[] = new Schedule[POP_SIZE/2];
+	private static Random m_rand = new Random();
 	
 	public Population(){
 		this.init();
@@ -44,6 +46,15 @@ public class Population {
 		System.out.println(min);
 	}
 	
+	public void printAvg(){
+		int cF = 0;
+		for(int iter = 0; iter < POP_SIZE; iter++){
+			cF += pop[iter].getFitness();
+		}
+		int avg = cF/POP_SIZE;
+		System.out.println("average: "+avg);
+	}
+	
 	public Schedule getBest(){
 		int min = Integer.MAX_VALUE;
 		for(int iter = 0; iter < POP_SIZE; iter++){
@@ -58,24 +69,42 @@ public class Population {
 		return gb;
 	}
 	
-	public void select(){
-		double pp = 0;
+	public Schedule getScndBest(){
+		int min = Integer.MAX_VALUE;
 		for(int iter = 0; iter < POP_SIZE; iter++){
-			pop[iter].setProbability(Sf,pp);
-			pp = pop[iter].getProbability();
-			//System.out.println("parent probability: "+ pp);
+			if(pop[iter].getFitness() < min)
+				min = pop[iter].getFitness();
 		}
-		for(int pairs = 0; pairs < POP_SIZE/2; pairs++){
-			double p = Math.random();
-			for(int iter = 0; iter < POP_SIZE; iter++){
-				if( pop[iter].getProbability() <= p)
-					s1[pairs] = pop[iter];
-				if(s1[pairs] == null)
-					s1[pairs] = pop[iter];
-				s2[pairs] = getBest();
-			}
+		Schedule gb = null;
+		for(int iter = 0; iter < POP_SIZE; iter++){
+			if(pop[iter].getFitness() == min)
+				gb = pop[iter];
+		}
+		return gb;
+	} 
+	
+	public void select(){
+		for(int iter = 0; iter < POP_SIZE/2; iter++){
+			//s1[iter] = rouletteWheelSelection();
+			s1[iter] = getBest();
+			s2[iter] = getScndBest();
+			//s2[iter] = rouletteWheelSelection();
 		}
 	}
+	
+	public Schedule rouletteWheelSelection() {
+    	//Wheel spin
+        double randNum = m_rand.nextDouble() * Sf;
+        int idx,wheel=0;
+        for (idx=0; idx < POP_SIZE && randNum>0; ++idx) {
+        	wheel+= pop[idx].getFitness();
+        	//System.out.println(wheel);
+			//System.out.println(randNum);
+            if(wheel>=randNum) 
+            	return pop[idx];
+        }
+        return pop[POP_SIZE-1];
+    }
 	
 	public void crossbreed(){
 		double p;
