@@ -6,52 +6,60 @@ import java.util.List;
 
 
 
-public class Schedule implements Comparable<Schedule>{
+public class Schedule {
+	
+	/* 30 employees, constant */
 	private final static int EMP_NUM = 30;
+	/* 14 calendar days, constant */
 	private final static int SCHED_DAY_NUM = 14;
-	private int sched[][] = new int[EMP_NUM][SCHED_DAY_NUM]; 
+	/* an 2d-array with employees as rows and days as columns */
+	private int sched[][] = new int[EMP_NUM][SCHED_DAY_NUM];
+	/* fitness of the schedule-chromosome, lower -> better */
 	private int fitness;
+	/* probability to be selected by roulette, not in use */
 	private double probability = 0;
 	
+	/* constant number of each shift every mon-tue, wed-fri, thu-sat-sun,
+	   this way feasibility is guaranteed but diversity may suffer */
 	private final static Integer[] MON_TUE = new Integer[] {0,0,0,0,0,1,1,1,1,1,1,1,1,1,
 										1,2,2,2,2,2,2,2,2,2,2,3,3,3,3,3};
 	private final static Integer[] WED_FRI = new Integer[] {0,0,0,0,0,0,0,0,0,0,1,1,1,1,
 										1,2,2,2,2,2,2,2,2,2,2,3,3,3,3,3};
 	private final static Integer[] THU_SAT_SUN = new Integer[] {0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 										0,1,1,1,1,1,2,2,2,2,2,3,3,3,3,3};
-	public Schedule(){
+	public Schedule(){	//	constructor
 		this.init();
 	}
 	
-	public Schedule(int flag){
+	public Schedule(int flag){	// a second constructor that initializes to 0
 		for(int day = 0; day < SCHED_DAY_NUM; day++){
 			for(int emp = 0; emp < EMP_NUM; emp++){
-				sched[emp][day] = 0;
+				sched[emp][day] = flag;
 			}
 		}
 	}
 	
 	private void init() {	//initialize schedule produces feasible chromosomes-schedules
 		for(int day = 0; day < SCHED_DAY_NUM; day++){
-			Integer[] shifts = getShifts(day);
+			Integer[] shifts = getShifts(day);	//	this function is used to differentiate between days
 			for(int emp = 0; emp < EMP_NUM; emp++){
 				sched[emp][day] = shifts[emp];
 			}
 		}
 	}
 	
-	private Integer[] getShifts(int day) {
+	private Integer[] getShifts(int day) {	//	returns a day's schedule as array of Integer
 		switch(day) {
-			case 0:
+			case 0:	//	mon-tue
 			case 1:
 			case 7:
 			case 8:
 				Integer[] intArray = MON_TUE;
-				List<Integer> intList = Arrays.asList(intArray);
-				Collections.shuffle(intList);
+				List<Integer> intList = Arrays.asList(intArray);	// just shufle the array produce random feasible schedules
+				Collections.shuffle(intList);	//	again, too lazy to implement my own method but in this case it's not a big problem
 				intList.toArray(intArray);
 				return intArray;
-			case 2:
+			case 2:	//	wed-fri
 			case 4:
 			case 9:
 			case 11:
@@ -60,7 +68,7 @@ public class Schedule implements Comparable<Schedule>{
 				Collections.shuffle(intList);
 				intList.toArray(intArray);
 				return intArray;
-			default:
+			default:	//	thu-sat-sun
 				intArray = THU_SAT_SUN;
 				intList = Arrays.asList(intArray);
 				Collections.shuffle(intList);
@@ -69,6 +77,10 @@ public class Schedule implements Comparable<Schedule>{
 		}
 	}
 	
+	/* check for feasibility by checking each day separately,
+	   not really needed in this implementation as all selection,
+	   crossover and mutation functions are designed to hold the
+	   hard constraint */
 	public boolean isFeasible() {
 		int feasDays = 0;
 		for(int day = 0; day < SCHED_DAY_NUM; day++){
@@ -87,7 +99,7 @@ public class Schedule implements Comparable<Schedule>{
 		return false;
 	}
 	
-	private int getNumofShifts(int day){
+	private int getNumofShifts(int day){	// returns number of shifts according to day
 		switch(day) {
 			case 0:
 			case 1:
@@ -105,7 +117,7 @@ public class Schedule implements Comparable<Schedule>{
 	}
 	
 	@Override
-	public String toString(){
+	public String toString(){	// a method to print each schedule
 		String aString = "";
 		for(int row = 0; row < this.sched.length; row++) {
 			for(int col = 0; col < this.sched[row].length; col++) {
@@ -116,6 +128,7 @@ public class Schedule implements Comparable<Schedule>{
 		return aString;
 	}
 	
+	/* setters and getters */
 	public int[][] getSchedule(){
 		return this.sched;
 	}
@@ -133,7 +146,7 @@ public class Schedule implements Comparable<Schedule>{
 	}
 	
 	public void setProbability(int totalFitness, double pp){
-		this.probability = pp + (1-(double)this.fitness / totalFitness);
+		this.probability = pp + (1-(double)this.fitness / totalFitness)*;
 	}
 	
 	public double getProbability(){
@@ -157,14 +170,5 @@ public class Schedule implements Comparable<Schedule>{
 	public int getSD(){return SCHED_DAY_NUM;}
 	
 	public int getSE(){return EMP_NUM;}
-	
-	public int compareTo(Schedule s) {
-
-		int compareFitness = ((Schedule) s).getFitness();
-
-		//ascending order
-		return compareFitness - this.getFitness();
-
-	}
 	
 }
