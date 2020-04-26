@@ -1,15 +1,17 @@
 package COMP417.WHPP.GA;
 
 import java.util.Random;
+import java.lang.Math;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 public class Population {
-	private final static int POP_SIZE = 200;
+	private final static int POP_SIZE = 15000;
 	private int Sf = 0;
-	private double mut_rate = 0.01;
-	private double cross_rate = 0.8;
+	private double mut_rate = 0.05;
+	private double cross_rate = 0.6;
+	private double bias = 1.15;
 	Schedule pop[] = new Schedule[POP_SIZE];
 	Schedule new_pop[] = new Schedule[POP_SIZE];
 	Schedule s1[] = new Schedule[POP_SIZE/2];
@@ -55,6 +57,15 @@ public class Population {
 		System.out.println("average: "+avg);
 	}
 	
+	public int getAvg(){
+		int cF = 0;
+		for(int iter = 0; iter < POP_SIZE; iter++){
+			cF += pop[iter].getFitness();
+		}
+		int avg = cF/POP_SIZE;
+		return avg;
+	}
+	
 	public Schedule getBest(){
 		int min = Integer.MAX_VALUE;
 		for(int iter = 0; iter < POP_SIZE; iter++){
@@ -69,7 +80,7 @@ public class Population {
 		return gb;
 	}
 	
-	public Schedule getScndBest(){
+	public int getFittest(){
 		int min = Integer.MAX_VALUE;
 		for(int iter = 0; iter < POP_SIZE; iter++){
 			if(pop[iter].getFitness() < min)
@@ -80,16 +91,27 @@ public class Population {
 			if(pop[iter].getFitness() == min)
 				gb = pop[iter];
 		}
-		return gb;
-	} 
+		return gb.getFitness();
+	}
 	
 	public void select(){
+		Arrays.sort(pop);
 		for(int iter = 0; iter < POP_SIZE/2; iter++){
 			//s1[iter] = rouletteWheelSelection();
-			s1[iter] = getBest();
-			s2[iter] = getScndBest();
 			//s2[iter] = rouletteWheelSelection();
+			s1[iter] = rankingSelection();
+			s2[iter] = rankingSelection();
 		}
+	}
+	
+	// return the index into the population of the selected parent. 
+	// population must be sorted by fitness first
+	// Darrell Whitley's Rank-biased selection
+	public Schedule rankingSelection(){
+		double rand01 = Math.random();
+		int index = (int)(POP_SIZE * (bias - Math.sqrt(bias*bias - 4.0*(bias-1) * rand01)) 
+			/ 2.0 / (bias-1));
+		return pop[index]; 
 	}
 	
 	public Schedule rouletteWheelSelection() {
@@ -107,6 +129,65 @@ public class Population {
     }
 	
 	public void crossbreed(){
+		uniformCrossover();
+		//kPointCrossover();
+	}
+
+	private void kPointCrossover(){//2 point crossover
+		int k1 = 14*1/3;
+		int k2 = 14*2/3;
+		int ndx = 0;
+		double p;
+		for(int iter = 0; iter < pop.length; iter++){
+				p = Math.random();
+				if(p < cross_rate){
+					if(s1[ndx].getFitness() <= s2[ndx].getFitness()){
+						for(int col = 0; col < k1; col++)
+							new_pop[iter].setColumn(s1[ndx].getColumn(col), col);
+						for(int col = k1; col < k2; col++)
+							new_pop[iter].setColumn(s2[ndx].getColumn(col), col);
+						for(int col = k2; col < pop[iter].getSD(); col++)
+							new_pop[iter].setColumn(s1[ndx].getColumn(col), col);
+					}
+					else{
+						for(int col = 0; col < k1; col++)
+							new_pop[iter].setColumn(s2[ndx].getColumn(col), col);
+						for(int col = k1; col < k2; col++)
+							new_pop[iter].setColumn(s1[ndx].getColumn(col), col);
+						for(int col = k2; col < pop[iter].getSD(); col++)
+							new_pop[iter].setColumn(s2[ndx].getColumn(col), col);
+					}
+				}
+				else{
+					if(s1[ndx].getFitness() <= s2[ndx].getFitness()){
+						for(int col = 0; col < k1; col++)
+							new_pop[iter].setColumn(s2[ndx].getColumn(col), col);
+						for(int col = k1; col < k2; col++)
+							new_pop[iter].setColumn(s1[ndx].getColumn(col), col);
+						for(int col = k2; col < pop[iter].getSD(); col++)
+							new_pop[iter].setColumn(s2[ndx].getColumn(col), col);
+					}
+					else{
+						for(int col = 0; col < k1; col++)
+							new_pop[iter].setColumn(s1[ndx].getColumn(col), col);
+						for(int col = k1; col < k2; col++)
+							new_pop[iter].setColumn(s2[ndx].getColumn(col), col);
+						for(int col = k2; col < pop[iter].getSD(); col++)
+							new_pop[iter].setColumn(s1[ndx].getColumn(col), col);
+					}
+				}
+				/*if(new_pop[iter].isFeasible())
+					System.out.println("OK");*/
+			
+			if(ndx < pop.length/2 - 1)
+				ndx++;
+			else
+				ndx = 0;
+		}
+		pop = new_pop;
+	}
+	
+	private void uniformCrossover(){
 		double p;
 		int ndx = 0;
 		for(int iter = 0; iter < pop.length; iter++){
@@ -129,22 +210,28 @@ public class Population {
 				ndx = 0;
 		}
 		pop = new_pop;
-		//Sf = 0;
-		//evaluate();
-		//for(int iter = 0; iter < pop.length; iter++)
-			//System.out.println(pop[iter]);
-		//System.out.println(pop.length);
 	}
 	
 	public void mutate(){
 		double p = Math.random();
 		for(int iter = 0; iter < POP_SIZE; iter++){
 			if(p <= mut_rate){
-				setMutant(iter);
+				//setMutant(iter);
+				swapMutate(iter);
 			}
 		}
 	}
 	
+	private void swapMutate(int child){
+		int p1 = (int)(Math.random() * ((pop[child].getSD() - 1) + 1));
+		int p2 = (int)(Math.random() * ((pop[child].getSD() - 1) + 1));
+		int[] temp1 = pop[child].getColumn(p1);
+		int[] temp2 = pop[child].getColumn(p2);
+		pop[child].setColumn(temp1, p2);
+		pop[child].setColumn(temp2, p1);
+	}
+	
+	//just shuffle a day's shifts between the employees
 	private void setMutant(int child){
 		int p = (int)(Math.random() * ((pop[child].getSD() - 1) + 1));
 		Integer[] boxedArray = Arrays.stream(pop[child].getColumn(p)) // IntStream

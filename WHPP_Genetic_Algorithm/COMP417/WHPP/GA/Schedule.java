@@ -6,7 +6,7 @@ import java.util.List;
 
 
 
-public class Schedule {
+public class Schedule implements Comparable<Schedule>{
 	private final static int EMP_NUM = 30;
 	private final static int SCHED_DAY_NUM = 14;
 	private int sched[][] = new int[EMP_NUM][SCHED_DAY_NUM]; 
@@ -157,5 +157,14 @@ public class Schedule {
 	public int getSD(){return SCHED_DAY_NUM;}
 	
 	public int getSE(){return EMP_NUM;}
+	
+	public int compareTo(Schedule s) {
+
+		int compareFitness = ((Schedule) s).getFitness();
+
+		//ascending order
+		return compareFitness - this.getFitness();
+
+	}
 	
 }
