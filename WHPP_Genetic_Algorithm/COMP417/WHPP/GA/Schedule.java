@@ -6,7 +6,7 @@ import java.util.List;
 
 
 
-public class Schedule {
+public class Schedule implements Comparable<Schedule>{
 	
 	/* 30 employees, constant */
 	private final static int EMP_NUM = 30;
@@ -146,7 +146,7 @@ public class Schedule {
 	}
 	
 	public void setProbability(int totalFitness, double pp){
-		this.probability = pp + (1-(double)this.fitness / totalFitness)*;
+		this.probability = pp + (1-(double)this.fitness / totalFitness);
 	}
 	
 	public double getProbability(){
@@ -170,5 +170,10 @@ public class Schedule {
 	public int getSD(){return SCHED_DAY_NUM;}
 	
 	public int getSE(){return EMP_NUM;}
+	
+	@Override
+    public int compareTo(Schedule s) {
+        return s.getFitness() - this.getFitness() ; // or whatever property you want to sort
+    }
 	
 }

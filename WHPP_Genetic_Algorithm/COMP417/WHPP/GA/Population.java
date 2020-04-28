@@ -14,15 +14,19 @@ public class Population {
 	/* Sum of fitness scores of all individuals */
 	private int Sf = 0;	
 	/* The rate at which mutations are to be performed, 5% was the optimal experimental value found */
-	private double mut_rate = 0.05;
+	private double mut_rate; //= 0.05;
 	/* The rate at which more genes will inherit from fittest parent (lower score), used on the 2-point crossover
 	0,6 was the optimal experimental value found */
-	private double cross_rate = 0.6;
+	private double cross_rate; //= 0.6;
 	/* A coefficient that determines how much we favour individuals of higher rank, used on the rank selection,
 	values lower than 1 favour highest score parents (worst), 1 picks random individuals,
 	higher than 1 favours lower score (higher rank) individuals but may result in rapid convergence,
 	1.15 was the optimal value found for this magnitude of population */
-	private double bias = 1.15;
+	private double bias; //= 1.15;
+	
+	private int cross_type;
+	
+	private int mut_type;
 	
 	private static Random m_rand = new Random();
 	
@@ -35,7 +39,12 @@ public class Population {
 	/* An array of Schedule objects for the 2nd parent */
 	Schedule s2[] = new Schedule[POP_SIZE/2];
 	
-	public Population(){	// Our constructor
+	public Population(double pmut, double pcross, double psel, int cross_type, int mut_type){	// Our constructor
+		this.mut_rate = pmut;
+		this.cross_rate = pcross;
+		this.bias = psel;
+		this.cross_type = cross_type;
+		this.mut_type = mut_type;
 		this.init();
 	}
 	
@@ -62,7 +71,7 @@ public class Population {
 			if(pop[iter].getFitness() == min)
 				System.out.println(pop[iter]);
 		}*/
-		System.out.println(min);
+		System.out.println("Best schedule score: "+min);
 	}
 	
 	public void printAvg(){	// A function that prints the score of the average individual
@@ -71,7 +80,7 @@ public class Population {
 			cF += pop[iter].getFitness();
 		}
 		int avg = cF/POP_SIZE;
-		System.out.println("average: "+avg);
+		System.out.println("Average schedule score: "+avg);
 	}
 	
 	public int getAvg(){	// A function that returns the average score of the generation
@@ -156,9 +165,11 @@ public class Population {
 	very similar scores */
     }
 	
-	public void crossbreed(){	// Wraper function for crossover functions
-		uniformCrossover();	// Uniform crossover
-		//kPointCrossover();	// k-point (2 point) crossover
+	public void crossover(){	// Wraper function for crossover functions
+		if(this.cross_type == 1)
+			uniformCrossover();	// Uniform crossover
+		else
+			kPointCrossover();	// k-point (2 point) crossover
 	}
 
 	private void kPointCrossover(){	//2 point crossover
@@ -246,8 +257,10 @@ public class Population {
 		double p = Math.random();
 		for(int iter = 0; iter < POP_SIZE; iter++){
 			if(p <= mut_rate){
-				//setMutant(iter);	// essentially a bit-flip mutation
-				swapMutate(iter);	// a swap mutation
+				if(mut_type == 1)
+					setMutant(iter);	// essentially a bit-flip mutation
+				else
+					swapMutate(iter);	// a swap mutation
 			}
 		}
 	}
