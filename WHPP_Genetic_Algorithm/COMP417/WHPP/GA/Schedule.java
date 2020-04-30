@@ -174,6 +174,7 @@ public class Schedule implements Comparable<Schedule>{
 	@Override
     public int compareTo(Schedule s) {
         return s.getFitness() - this.getFitness() ; // or whatever property you want to sort
+		//return this.getFitness() - s.getFitness();
     }
 	
 }

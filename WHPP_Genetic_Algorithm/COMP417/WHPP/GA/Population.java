@@ -267,11 +267,18 @@ public class Population {
 	
 	private void swapMutate(int child){	// swap two days of the schedule (ensures feasibility)
 		int p1 = (int)(Math.random() * ((pop[child].getSD() - 1) + 1));	// randomly select first day
-		int p2 = (int)(Math.random() * ((pop[child].getSD() - 1) + 1));	// randomly select second day
+		int p2;
+		if(p1+7 < pop[child].getSD())
+			p2 = p1+7;
+		else
+			p2 = p1-7;
+		//int p2 = (int)(Math.random() * ((pop[child].getSD() - 1) + 1));	// randomly select second day
 		int[] temp1 = pop[child].getColumn(p1);
 		int[] temp2 = pop[child].getColumn(p2);
 		pop[child].setColumn(temp1, p2);	// swap the days
 		pop[child].setColumn(temp2, p1);
+		if(!pop[child].isFeasible())
+			System.out.println("ERROR!");
 	}
 	
 	/* Bit-wise flip logic applied to WHPP problem (if I am interprenting it correctly) 
@@ -288,6 +295,8 @@ public class Population {
 		pop[child].setColumn(intArray, p);
 		/* Experimentally this mutation did not produce very good results because of the limited mutation
 		   also the method used to shuffle the day column array makes it much slower */
+		if(!pop[child].isFeasible())
+			System.out.println("ERROR!");
 	}
 	
 	public void evaluate(){ // for each individual assign a penalty depending on the soft constraints
